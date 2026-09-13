@@ -553,28 +553,57 @@ textarea.input {
   margin-top: 16px;
 }
 
-/* ---------- 活動紀錄 LOG ---------- */
-.log-list {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: grid;
-  gap: 10px;
+/* ---------- 活動紀錄 LOG（可卷動表格）----------
+   紀錄多嘅時候喺框內卷動；表頭 sticky，所以卷動時仍然見到欄名。 */
+.log-table-wrap {
+  max-height: 60vh;
+  overflow-y: auto;
+  overflow-x: auto;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--surface);
 }
-.log-item {
-  border-left: 3px solid var(--border);
-  padding-left: 10px;
-}
-.log-head {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 8px;
+.log-table {
+  width: 100%;
+  border-collapse: collapse;
   font-size: 0.88rem;
 }
-.log-time {
+.log-table th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: #f8f9fc;
   color: var(--muted);
   font-size: 0.78rem;
+  font-weight: 600;
+  text-align: left;
+  padding: 8px 10px;
+  white-space: nowrap;
+  border-bottom: 1px solid var(--border);
+}
+.log-table td {
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--border);
+  vertical-align: top;
+}
+.log-table tbody tr:last-child td {
+  border-bottom: none;
+}
+.log-table tbody tr:hover {
+  background: #f8f9fc;
+}
+/* 欄寬：Date / Time / Person 唔換行；Activity 食晒剩餘空間 */
+.log-col-date,
+.log-col-time,
+.log-col-person {
+  white-space: nowrap;
+}
+.log-col-activity {
+  width: 100%;
+  min-width: 240px;
+}
+.log-col-action {
+  width: 1%;
   white-space: nowrap;
 }
 .log-who {
@@ -583,18 +612,32 @@ textarea.input {
 .log-summary {
   color: #333a4a;
 }
-/* LOG 行嘅 workflow 名：長名要識得換行，唔好撐爆成行 */
-.log-head .flow-name {
-  min-width: 0;
+/* LOG 格入面嘅單位／workflow：細字、灰色、獨立一行 */
+.log-cell-unit,
+.log-cell-flow {
+  display: block;
+  color: var(--muted);
+  font-size: 0.76rem;
+}
+.log-cell-flow {
   overflow-wrap: anywhere;
 }
-.log-delete {
-  margin-left: auto;
+/* Activity 格：badge 同後面嘅 summary 之間留 6px */
+.log-table .log-action {
+  margin-right: 6px;
+}
+@media (max-width: 640px) {
+  .log-table-wrap {
+    max-height: 55vh;
+  }
+  .log-col-activity {
+    min-width: 180px;
+  }
 }
 .log-details {
   list-style: disc;
-  margin: 6px 0 0;
-  padding-left: 22px;
+  margin: 4px 0 0;
+  padding-left: 20px;
   display: grid;
   gap: 3px;
   font-size: 0.82rem;

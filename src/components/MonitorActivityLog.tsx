@@ -79,7 +79,8 @@ export default function MonitorActivityLog({
         </button>
       </div>
       <p className="muted workflow-desc">
-        Every change by any unit or colleague is recorded (latest {MAX_LOGS} entries only).
+        Every change by any unit or colleague is recorded — newest first. Scroll
+        inside the list to see more (latest {MAX_LOGS} entries only).
         {canDelete ? 'You can delete any entry.' : 'View only — you cannot delete.'}
       </p>
 

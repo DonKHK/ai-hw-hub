@@ -150,7 +150,7 @@ export async function deletePlanLog(logId: string): Promise<void> {
   await deleteDoc(doc(firestore(), LOGS_COLLECTION, logId))
 }
 
-/** 時間顯示（yyyy-mm-dd hh:mm）。 */
+/** 時間顯示（yyyy-mm-dd hh:mm）。保留做向後兼容。 */
 export function formatLogTime(ms: number): string {
   if (ms === 0) {
     return '—'
@@ -160,6 +160,25 @@ export function formatLogTime(ms: number): string {
   return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(
     date.getDate(),
   )} ${pad(date.getHours())}:${pad(date.getMinutes())}`
+}
+
+/** 日期欄（例 `13/9/2026`，日/月/年）。 */
+export function formatLogDate(ms: number): string {
+  if (ms === 0) {
+    return '—'
+  }
+  const date = new Date(ms)
+  return `${date.getDate()}/${date.getMonth() + 1}/${date.getFullYear()}`
+}
+
+/** 時間欄（例 `13:45`，24 小時制）。 */
+export function formatLogClock(ms: number): string {
+  if (ms === 0) {
+    return '—'
+  }
+  const date = new Date(ms)
+  const pad = (value: number) => String(value).padStart(2, '0')
+  return `${pad(date.getHours())}:${pad(date.getMinutes())}`
 }
 
 /* ============================================================

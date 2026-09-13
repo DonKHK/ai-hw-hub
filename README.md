@@ -48,7 +48,6 @@ cp .env.example .env   # 填入 Firebase「AI Homework」專案嘅 Web App 設�
 | `VITE_PORTAL_BUSINESS_NAMES` | 業務單位清單（逗號分隔） |
 | `VITE_PORTAL_CEO_PASSWORD` | CEO 登入密碼 |
 | `VITE_PORTAL_STEERING_PASSWORD` | Read-only Steering 登入密碼 |
-| `VITE_PORTAL_ADMIN_PASSWORD` | Administration 登入密碼 |
 | `VITE_PORTAL_UNIT_PASSWORD_SUFFIX` | 單位密碼尾碼（單位英文名頭 3 個字母 + 尾碼） |
 
 > ⚠️ 冇填 = **登入唔到**（fail-closed）。登入頁會顯示「Portal sign-in is not

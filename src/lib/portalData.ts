@@ -85,7 +85,6 @@ const PASSWORD_CEO = envValue(import.meta.env.VITE_PORTAL_CEO_PASSWORD)
 const PASSWORD_STEERING = envValue(
   import.meta.env.VITE_PORTAL_STEERING_PASSWORD,
 )
-const PASSWORD_ADMIN = envValue(import.meta.env.VITE_PORTAL_ADMIN_PASSWORD)
 /** 單位密碼 = 單位英文名頭 3 個字母 + 呢個尾碼 */
 const PASSWORD_UNIT_SUFFIX = envValue(
   import.meta.env.VITE_PORTAL_UNIT_PASSWORD_SUFFIX,
@@ -97,7 +96,6 @@ export function isPortalLoginConfigured(): boolean {
   const hasPassword =
     PASSWORD_CEO !== '' ||
     PASSWORD_STEERING !== '' ||
-    PASSWORD_ADMIN !== '' ||
     PASSWORD_UNIT_SUFFIX !== ''
   return hasUnits && hasPassword
 }
@@ -110,10 +108,8 @@ export function expectedPassword(identity: PortalIdentity): string {
   if (identity.kind === 'readonly') {
     return PASSWORD_STEERING
   }
-  if (identity.name === 'Administration') {
-    return PASSWORD_ADMIN
-  }
   // 單位密碼 = 單位英文名（細楷、去除非英文字母）頭 3 個字母 + 尾碼
+  // （所有單位一律用呢條規則，冇任何例外）
   const base =
     identity.name.toLowerCase().replace(/[^a-z]/g, '') ||
     identity.id.toLowerCase().replace(/[^a-z0-9]/g, '')

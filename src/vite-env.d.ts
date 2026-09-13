@@ -30,7 +30,6 @@ interface ImportMetaEnv {
   readonly VITE_PORTAL_BUSINESS_NAMES?: string
   readonly VITE_PORTAL_CEO_PASSWORD?: string
   readonly VITE_PORTAL_STEERING_PASSWORD?: string
-  readonly VITE_PORTAL_ADMIN_PASSWORD?: string
   readonly VITE_PORTAL_UNIT_PASSWORD_SUFFIX?: string
 }
 

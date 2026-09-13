@@ -13,7 +13,6 @@ import {
 } from '../firebase/authService'
 import { accessForUser } from '../lib/access'
 import { describeStoreError } from '../lib/firestoreError'
-import { ROLE_LABELS } from '../lib/firebaseRoles'
 import { LOCAL_INVENTORY } from '../lib/localInventory'
 import { PORTAL_IDENTITIES } from '../lib/portalData'
 import {
@@ -307,13 +306,19 @@ export default function MonitorPage() {
               You are: {access === null ? '—' : access.displayName}
               {access !== null && (
                 <span className="identity-id">
-                  （{ROLE_LABELS[access.role]} ·{' '}
+                  （{access.roleLabel} ·{' '}
                   {access.monitorScope === 'unit'
                     ? 'your own unit only'
                     : 'all units'}）
                 </span>
               )}
             </p>
+            {access !== null && access.canManage !== true && (
+              <p className="muted hint-text">
+                View-only account — unit Reset and activity-log deletion are
+                reserved for the Firebase Superadmin (Admin account sign-in).
+              </p>
+            )}
           </div>
           <div className="monitor-actions">
             {access !== null &&

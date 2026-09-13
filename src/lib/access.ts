@@ -15,6 +15,14 @@ export interface Access {
   displayName: string
   role: AppUser['role']
   /**
+   * 顯示用嘅身份標籤。
+   *
+   * ⚠️ 唔可以就咁顯示 `role`：Portal CEO 嘅 `role` 係 'superadmin'
+   * （見 AuthProvider 嘅 portalRole），但佢**冇任何**刪除／重設權。
+   * 照顯示會令人誤以為自己有 Superadmin 權限（睇唔到 Reset 掣就以為係 bug）。
+   */
+  roleLabel: string
+  /**
    * 監控 Dashboard 見到嘅範圍。
    * - 'all'  = 全部單位（superadmin／觀察員／Portal CEO・Steering）
    * - 'unit' = 只睇自己綁定單位（admin）
@@ -73,6 +81,8 @@ export function accessForUser(user: AppUser): Access {
         userId: user.uid,
         displayName: user.displayName ?? user.uid,
         role: user.role,
+        // fail-closed：連身份都搵唔到 → 唔好顯示成任何有權嘅角色
+        roleLabel: 'No access',
         monitorScope: 'none',
         workflowScope: 'none',
         canPullFromPortal: false,
@@ -88,6 +98,7 @@ export function accessForUser(user: AppUser): Access {
         userId: identity.id,
         displayName: identity.name,
         role: user.role,
+        roleLabel: identity.kind === 'business' ? 'Business' : 'Dept',
         monitorScope: 'none',
         workflowScope: 'unit',
         canPullFromPortal: false,
@@ -104,6 +115,10 @@ export function accessForUser(user: AppUser): Access {
       userId: identity.id,
       displayName: identity.name,
       role: user.role,
+      // ⚠️ CEO／Steering 睇晒所有單位，但【只可以睇】——
+      //    role 雖然係 'superadmin'（見 AuthProvider 嘅 portalRole），
+      //    顯示上一定要寫清楚 view-only，否則會誤會自己有 Reset／刪除權。
+      roleLabel: 'View-only',
       monitorScope: 'all',
       workflowScope: 'all',
       canPullFromPortal: false,
@@ -118,6 +133,12 @@ export function accessForUser(user: AppUser): Access {
     userId: user.uid,
     displayName: user.displayName ?? user.email ?? user.uid,
     role: user.role,
+    roleLabel:
+      user.role === 'superadmin'
+        ? 'Superadmin'
+        : user.role === 'admin'
+          ? 'Admin'
+          : 'User (observer)',
     monitorScope: user.role === 'admin' ? 'unit' : 'all',
     workflowScope: user.role === 'admin' ? 'unit' : 'all',
     canPullFromPortal: user.role === 'superadmin',

@@ -4,7 +4,6 @@ import AppHeader from '../components/AppHeader'
 import { useAuth } from '../context/useAuth'
 import { accessForUser } from '../lib/access'
 import { describeStoreError } from '../lib/firestoreError'
-import { ROLE_LABELS } from '../lib/firebaseRoles'
 import { UNIT_STATE_LABELS, planState, todayIso } from '../lib/planStatus'
 import { findIdentity } from '../lib/portalData'
 import type { PortalIdentity } from '../lib/portalData'
@@ -227,7 +226,7 @@ export default function WorkflowsPage() {
               )}
               {identity === undefined && access !== undefined && (
                 <span className="identity-id">
-                  （{ROLE_LABELS[access.role]}）
+                  （{access.roleLabel}）
                 </span>
               )}
             </p>

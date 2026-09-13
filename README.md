@@ -191,8 +191,15 @@ src/
 
 - **KPI 卡**：單位總數 / 已揀 Flow 嘅單位 / 已入 AI 方法 / 就到期 / 已到期
 - **單位監控表**：每個 BU/DEPT 一行 —— workflow 數、已揀 Flow、已入 AI 方法、最近到期、狀態
-- **展開明細**：撳單位嗰行 → 每條 workflow 嘅狀態、填報人、每個 step 嘅 timeline（如期／就到期／已到期）
+- **展開明細**：撳單位嗰行 → 每條 workflow 嘅狀態、填報人、Plan 嘅開始／完成日期、每個 step 嘅 timeline（如期／就到期／已到期）
 - **篩選**：全部 / 需要跟進 / 已到期 / 就到期 / 已揀未填 / 未開始 / 進行中 / 已完成
+
+> **「到期點」有兩層**，兩者一齊計（見 `src/lib/planStatus.ts`）：
+> 1. 每個 **step** 嘅 due date（`step.dueDate`，舊資料用 `step.due`）
+> 2. **Plan details 嘅 end date**（`plan.endDate`）—— 整條計劃嘅大限
+>
+> 所以 KPI 嘅「就到期／已到期」、單位狀態、篩選數字、「最近到期」欄，
+> 都會包含過咗 plan end date 嘅計劃（唔再只係睇 step）。
 
 ### 狀態定義
 
@@ -200,10 +207,10 @@ src/
 |---|---|
 | 未開始 | 完全冇計劃記錄 |
 | 已揀 Flow（未填） | 有記錄但 `plan` 空白 |
-| 進行中 | 已填，全部 step 到期日 > 14 日 |
-| 就到期 | 有 step 喺 **14 日內**到期（改 `DUE_SOON_DAYS` 可調） |
-| 已到期 | 有 step 已經過期 |
-| 已完成 | AI 計劃表單揀咗「已完成」 |
+| 進行中 | 已填，所有到期點（step due ＋ Plan end date）都 > 14 日 |
+| 就到期 | 有 step **或 Plan details end date** 喺 **14 日內**到期（改 `DUE_SOON_DAYS` 可調） |
+| 已到期 | 有 step **或 Plan details end date** 已經過期 |
+| 已完成 | AI 計劃表單揀咗「已完成」，或者全部 step 都 Done（完成後唔會再因為過期而變「已到期」） |
 
 ### 權限視圖（兩種登入方法係**唔同工種**）
 

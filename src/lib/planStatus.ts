@@ -6,6 +6,11 @@ import type { AiPlan, AiPlanStep } from '../types'
  * 點解要獨立一個檔：dashboard 要「就到期 / 已到期」嘅判斷，
  * 而舊資料嘅 `step.due` 係自由文字（可能係 "Q2"、"下個月"），
  * 所以要集中處理「parse 唔到就當未定日期」呢件事。
+ *
+ * 「到期點」有兩層：
+ * 1. 每個 step 嘅 due date（`step.dueDate`，舊資料用 `step.due`）
+ * 2. Plan details 嘅 end date（`plan.endDate`）—— 整條計劃嘅大限
+ * 兩者一齊計，所以 KPI 嘅「就到期 / 已到期」係兩層都包含。
  */
 
 /** 「就到期」門檻（日）。想改就改呢個。 */
@@ -46,6 +51,17 @@ export function stepDueDate(step: AiPlanStep): string | null {
   return null
 }
 
+/**
+ * 攞一條計劃「Plan details」嘅完成日（`plan.endDate`）。
+ * 只接受 yyyy-mm-dd；parse 唔到就 null（同 `stepDueDate` 一致）。
+ */
+export function planEndDate(plan: AiPlan): string | null {
+  if (typeof plan.endDate === 'string' && ISO_DATE.test(plan.endDate.trim())) {
+    return plan.endDate.trim()
+  }
+  return null
+}
+
 export type TimelineState = 'overdue' | 'dueSoon' | 'onTrack' | 'noDate'
 
 export interface StepTimeline {
@@ -69,6 +85,17 @@ export function stateForDue(
     return 'overdue'
   }
   return daysLeft <= DUE_SOON_DAYS ? 'dueSoon' : 'onTrack'
+}
+
+/**
+ * Plan details 嘅 end date 狀態（同 step 用同一套 overdue／dueSoon／onTrack／noDate）。
+ * 冇填 end date 或者 parse 唔到 → 'noDate'。
+ */
+export function planEndState(
+  plan: AiPlan,
+  today: string = todayIso(),
+): TimelineState {
+  return stateForDue(planEndDate(plan), today)
 }
 
 /** 一條 AI 計劃嘅完整 timeline。 */
@@ -119,10 +146,19 @@ export function planState(
     return 'selected'
   }
   const timeline = planTimeline(plan, today)
-  if (timeline.some((item) => item.state === 'overdue')) {
+  // 🆕 Plan details 嘅 end date 都係一個「到期點」——
+  //    同 step due date 一齊判斷：過咗 = Overdue，14 日內 = Due soon。
+  const endState = planEndState(plan, today)
+  if (
+    timeline.some((item) => item.state === 'overdue') ||
+    endState === 'overdue'
+  ) {
     return 'overdue'
   }
-  if (timeline.some((item) => item.state === 'dueSoon')) {
+  if (
+    timeline.some((item) => item.state === 'dueSoon') ||
+    endState === 'dueSoon'
+  ) {
     return 'dueSoon'
   }
   return 'in_progress'
@@ -173,6 +209,15 @@ export function earliestDue(
       }
       if (best === null || item.daysLeft < best.daysLeft) {
         best = { due: item.due, daysLeft: item.daysLeft, state: item.state }
+      }
+    }
+    // 🆕 Plan details 嘅 end date 都係一個「到期點」——
+    //    如果佢早過所有 step due date，就會係「最近到期」。
+    const end = planEndDate(plan)
+    if (end !== null) {
+      const daysLeft = daysBetween(today, end)
+      if (best === null || daysLeft < best.daysLeft) {
+        best = { due: end, daysLeft, state: stateForDue(end, today) }
       }
     }
   }

@@ -1,6 +1,8 @@
 import {
   TIMELINE_STATE_LABELS,
   UNIT_STATE_LABELS,
+  planEndDate,
+  planEndState,
   planState,
   planTimeline,
 } from '../lib/planStatus'
@@ -31,6 +33,13 @@ export default function UnitPlanDetail({
       {plans.map((plan) => {
         const state = planState(plan, today)
         const timeline = planTimeline(plan, today)
+        // 🆕 Plan details 嘅開始／完成日期（KPI 嘅「就到期／已到期」包含 end date）
+        const startDate =
+          typeof plan.startDate === 'string' && plan.startDate.trim() !== ''
+            ? plan.startDate
+            : null
+        const endDate = planEndDate(plan)
+        const endState = planEndState(plan, today)
         return (
           <li key={plan.id} className="plan-detail">
             <div className="plan-detail-head">
@@ -45,6 +54,15 @@ export default function UnitPlanDetail({
                 Submitted by: {plan.ownerName ?? plan.ownerId}
               </span>
             </div>
+
+            {(startDate !== null || endDate !== null) && (
+              <p className="muted hint-text">
+                Plan: {startDate ?? '—'} → {endDate ?? '—'}{' '}
+                <span className={`state-chip state-${endState}`}>
+                  {TIMELINE_STATE_LABELS[endState]}
+                </span>
+              </p>
+            )}
 
             {timeline.length === 0 ? (
               <p className="muted hint-text">No steps yet.</p>

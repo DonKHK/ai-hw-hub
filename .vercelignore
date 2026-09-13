@@ -1,0 +1,17 @@
+# Vercel 上載排除清單（安全網）
+# ⚠️ .env 一定唔可以上：Vercel dashboard 嘅 source view 會睇到真密碼
+#    （正式環境改用 Vercel 嘅 Environment Variables）
+.env
+.env.*
+!.env.example
+
+# Firestore 保安規則：唔上載（同上）
+firestore.rules
+
+# 780MB 獨立 git repo
+ai-homework-follow-up/
+
+# 建置產物／log
+node_modules
+dist
+*.log

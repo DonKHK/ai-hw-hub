@@ -39,3 +39,8 @@ ai-homework-follow-up/
 # 本機檔案照樣保留，部署時手動貼上 Firebase Console 即可。
 firestore.rules
 
+# Vercel 本機連結（.vercel/project.json 含 projectId / orgId，唔需要 commit）
+.vercel
+
+# Vercel CLI 自動產生嘅本機環境檔（含 VERCEL_OIDC_TOKEN，已經由上面 .env.* 覆蓋）
+.env*

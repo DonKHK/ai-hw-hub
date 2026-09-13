@@ -239,6 +239,74 @@ AI 計劃存喺 Firestore `aiPlans`（唔再係淨係 localStorage），所以 s
 Superadmin 喺監控頁會見到「同步本機資料（N）」掣 —— 將本機 localStorage
 嘅舊 AI 計劃一次過上傳 Firestore（upsert，重複按都安全）。
 
+## 部署（Vercel）
+
+線上版本：**https://aihw-don.vercel.app**
+
+### 專案設定檔
+
+| 檔案 | 作用 |
+|---|---|
+| `vercel.json` | 用 Vite preset ＋ SPA `rewrites`（令 `/workflows`、`/monitor` 直接開／F5 唔會 404）＋ 兩個安全 header |
+| `.vercelignore` | 上載排除清單 —— 特別確保 `.env` **唔會**上去 |
+
+### ⚠️ 一定要設定 Environment Variables
+
+Vercel **唔會**讀本機 `.env`。冇設定就會見到「Portal sign-in is not configured」，
+而且 Firebase 登入唔到。要喺 **Vercel → Project → Settings → Environment Variables**
+加入（Production / Preview 兩個環境都要）：
+
+```
+VITE_FIREBASE_API_KEY
+VITE_FIREBASE_AUTH_DOMAIN
+VITE_FIREBASE_PROJECT_ID
+VITE_FIREBASE_STORAGE_BUCKET
+VITE_FIREBASE_MESSAGING_SENDER_ID
+VITE_FIREBASE_APP_ID
+VITE_FIREBASE_MEASUREMENT_ID
+
+VITE_PORTAL_SUPABASE_URL
+VITE_PORTAL_SUPABASE_ANON_KEY
+VITE_PORTAL_UNITS_TABLE
+VITE_PORTAL_WORKFLOWS_TABLE
+VITE_PORTAL_UNIT_COL
+VITE_PORTAL_UNIT_NAME_COL
+
+VITE_PORTAL_DEPT_NAMES
+VITE_PORTAL_BUSINESS_NAMES
+VITE_PORTAL_CEO_PASSWORD
+VITE_PORTAL_STEERING_PASSWORD
+VITE_PORTAL_UNIT_PASSWORD_SUFFIX
+```
+
+> 改完環境變數要**重新部署**先生效（Vite 係 build-time 注入）。
+
+### ☝️ Firebase Auth 授權網域
+
+如果部署後 Firebase 登入報 `auth/unauthorized-domain`，
+去 **Firebase Console → Authentication → Settings → Authorized domains**
+加入 `aihw-don.vercel.app`。
+
+> Portal 登入**唔受影響**（純前端驗證）。
+
+### 🔒 安全提醒（重要）
+
+Vite 係 **build-time** 注入環境變數，即係所有 `VITE_*` 值**都會 embed 落
+前端 bundle**。即係任何訪客開 F12 都睇得到 Portal 密碼。
+
+- 原始碼 repo 乾淨（`src/` 冇密碼），但**部署出嚟嘅網站唔係保密嘅**
+- 要真正保護就要搬去後端（Phase 2）
+
+### 本機手動部署
+
+```bash
+vercel link --yes --project aihw-don
+vercel deploy --prod
+```
+
+> PowerShell 環境下建議加 `< nul`（例如 `vercel whoami < nul`），
+> 避免 CLI 等緊輸入而卡住。
+
 ## 備註
 
 - Session 存 `localStorage`（呢個 Vite SPA 冇 server），對應原本 Next.js 版嘅

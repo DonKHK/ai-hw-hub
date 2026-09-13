@@ -139,58 +139,15 @@ code {
   background: #eef2ff;
   border-color: #c7d2fe;
 }
-.project-section {
-  margin-top: 28px;
+/* ---------- 區塊間距 ----------
+   `.page` 冇 gap、`.card` 又冇 margin → 相鄰嘅卡／表單會貼實（0px）。
+   用相鄰選擇器 → 只喺真係緊接住嘅時候加，
+   唔會同 .page-header / .kpi-grid 嘅 margin 疊加（唔會變 40px）。 */
+.page > .card + .card,
+.page > .field-stack + .card {
+  margin-top: 20px;
 }
-.project-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-  gap: 16px;
-}
-.project-card {
-  display: block;
-  text-decoration: none;
-  color: inherit;
-  transition:
-    transform 0.12s ease,
-    box-shadow 0.12s ease;
-}
-.project-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 20px rgba(16, 24, 40, 0.08);
-}
-.project-card-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 8px;
-}
-.project-card-desc {
-  color: #333a4a;
-  font-size: 0.92rem;
-  margin: 0 0 10px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-.project-card-meta {
-  margin: 0;
-  font-size: 0.8rem;
-}
-
 /* ---------- 表單 ---------- */
-.form-grid {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-}
-.form-grid .input {
-  flex: 1 1 180px;
-}
-.form-grid .btn {
-  flex: 0 0 auto;
-}
 .field-stack {
   display: grid;
   gap: 12px;
@@ -306,18 +263,6 @@ textarea.input {
   color: #4b5563;
   white-space: nowrap;
 }
-.chip-project {
-  background: #eef2ff;
-  color: var(--primary);
-}
-.chip-todo {
-  background: #fef3c7;
-  color: #92400e;
-}
-.chip-in_progress {
-  background: #dbeafe;
-  color: #1d4ed8;
-}
 .chip-done {
   background: #dcfce7;
   color: #15803d;
@@ -386,44 +331,6 @@ textarea.input {
   font-size: 0.95rem;
 }
 
-/* ---------- 任務清單 ---------- */
-.task-list {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: grid;
-  gap: 12px;
-}
-.task-item {
-  display: flex;
-  justify-content: space-between;
-  gap: 16px;
-  flex-wrap: wrap;
-  align-items: flex-start;
-}
-.task-main {
-  min-width: 0;
-  flex: 1 1 260px;
-}
-.task-main h3 {
-  margin-bottom: 4px;
-}
-.task-main p {
-  margin: 0 0 6px;
-  color: #333a4a;
-  font-size: 0.92rem;
-}
-.task-meta {
-  margin: 0;
-  font-size: 0.8rem;
-}
-.task-actions {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  flex-wrap: wrap;
-}
-
 @media (max-width: 640px) {
   .page {
     padding: 20px 14px 60px;
@@ -431,11 +338,730 @@ textarea.input {
   .topbar-inner {
     padding: 10px 14px;
   }
-  .form-grid .btn {
-    flex: 1 1 100%;
+}
+
+/* ---------- Portal 登入（揀身份 + 密碼） ---------- */
+.login-sub {
+  font-size: 0.9rem;
+  margin: -6px 0 16px;
+}
+.login-hint {
+  font-size: 0.78rem;
+  margin: 14px 0 0;
+  line-height: 1.7;
+}
+.select-input {
+  appearance: auto;
+  min-height: 42px;
+}
+.select-input optgroup {
+  font-style: normal;
+  font-weight: 600;
+  color: var(--muted);
+}
+.select-input option {
+  font-weight: 400;
+  color: var(--text);
+}
+/* Firebase 設定指引（登入頁）分節標題 —— h3 本身 margin: 0，要補間距 */
+.notice-heading {
+  font-size: 1rem;
+  margin: 18px 0 8px;
+}
+.identity-id {
+  color: var(--muted);
+  font-size: 0.82rem;
+  margin-left: 6px;
+}
+
+/* ---------- 監控 Dashboard ---------- */
+.monitor-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 12px;
+  margin-bottom: 20px;
+}
+.kpi-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px 16px;
+}
+.kpi-label {
+  color: var(--muted);
+  font-size: 0.82rem;
+  margin: 0 0 4px;
+}
+.kpi-value {
+  font-size: 1.7rem;
+  font-weight: 700;
+  line-height: 1.2;
+  margin: 0;
+}
+.kpi-value-warn {
+  color: #b45309;
+}
+.kpi-value-danger {
+  color: var(--danger);
+}
+.filter-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 14px;
+}
+.monitor-table-wrap {
+  overflow-x: auto;
+}
+.monitor-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+.monitor-table th,
+.monitor-table td {
+  text-align: left;
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+}
+.monitor-table th {
+  color: var(--muted);
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+.monitor-row {
+  cursor: pointer;
+}
+.monitor-row:hover {
+  background: #f8f9fc;
+}
+.monitor-unit-name {
+  font-weight: 600;
+}
+.monitor-detail-row td {
+  background: #f8f9fc;
+  white-space: normal;
+}
+.plan-detail-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 12px;
+}
+.plan-detail {
+  border-left: 3px solid var(--border);
+  padding-left: 10px;
+}
+.plan-detail-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.9rem;
+}
+.timeline-list {
+  list-style: none;
+  margin: 6px 0 0;
+  padding: 0;
+  display: grid;
+  gap: 4px;
+}
+.timeline-item {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.85rem;
+}
+.timeline-name {
+  min-width: 120px;
+}
+.state-chip {
+  display: inline-block;
+  border-radius: 999px;
+  padding: 2px 10px;
+  font-size: 0.76rem;
+  font-weight: 600;
+}
+.state-overdue {
+  background: #fee2e2;
+  color: #b91c1c;
+}
+.state-dueSoon {
+  background: #fef3c7;
+  color: #b45309;
+}
+.state-onTrack {
+  background: #dcfce7;
+  color: #15803d;
+}
+.state-done {
+  background: #dcfce7;
+  color: #15803d;
+}
+.state-in_progress {
+  background: #e0e7ff;
+  color: #4338ca;
+}
+.state-selected {
+  background: #fef3c7;
+  color: #b45309;
+}
+.state-not_started,
+.state-noDate {
+  background: #eef0f6;
+  color: #6b7280;
+}
+/* ---------- Workflow 空狀態 / 重新抽取回饋 ---------- */
+.empty-state {
+  background: #eef2ff;
+  border: 1px solid #c7d2fe;
+  border-radius: 10px;
+  padding: 14px 16px;
+  margin: 0 0 14px;
+}
+.empty-state h3 {
+  margin: 0 0 6px;
+}
+.empty-state p {
+  margin: 0 0 4px;
+}
+.pull-feedback {
+  margin: 12px 0 0;
+  font-size: 0.88rem;
+  color: #15803d;
+}
+.source-badge {
+  display: inline-block;
+  margin: 0 0 12px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: #eef2ff;
+  color: #4338ca;
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+/* 部門下拉：喺按鈕下面、貼住 workflow 列表 */
+.unit-filter {
+  margin-top: 16px;
+}
+
+/* ---------- 活動紀錄 LOG ---------- */
+.log-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 10px;
+}
+.log-item {
+  border-left: 3px solid var(--border);
+  padding-left: 10px;
+}
+.log-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.88rem;
+}
+.log-time {
+  color: var(--muted);
+  font-size: 0.78rem;
+  white-space: nowrap;
+}
+.log-who {
+  font-weight: 600;
+}
+.log-summary {
+  color: #333a4a;
+}
+/* LOG 行嘅 workflow 名：長名要識得換行，唔好撐爆成行 */
+.log-head .flow-name {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.log-delete {
+  margin-left: auto;
+}
+.log-details {
+  list-style: disc;
+  margin: 6px 0 0;
+  padding-left: 22px;
+  display: grid;
+  gap: 3px;
+  font-size: 0.82rem;
+  color: var(--muted);
+}
+.log-action {
+  display: inline-block;
+  border-radius: 999px;
+  padding: 1px 8px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  background: #eef0f6;
+  color: #4b5563;
+  white-space: nowrap;
+}
+.log-action-created {
+  background: #dcfce7;
+  color: #15803d;
+}
+.log-action-updated {
+  background: #e0e7ff;
+  color: #4338ca;
+}
+.log-action-selected {
+  background: #fef3c7;
+  color: #b45309;
+}
+.log-action-deleted {
+  background: #fee2e2;
+  color: #b91c1c;
+}
+
+/* ---------- 我嘅 AI 計劃 ---------- */
+.my-plan-list {
+  list-style: none;
+  margin: 0 0 4px;
+  padding: 0;
+  display: grid;
+  gap: 8px;
+}
+.my-plan-item {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  border: 1px solid var(--border);
+  background: #f8f9fc;
+  border-radius: 10px;
+  padding: 9px 12px;
+  font-size: 0.9rem;
+}
+.my-plan-action {
+  margin-left: auto;
+}
+
+
+/* ---------- 頂部導航（Workflows / 專案 tab） ---------- */
+.topbar-brand {
+  text-decoration: none;
+}
+.topbar-nav {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+.nav-link {
+  text-decoration: none;
+  color: var(--muted);
+  font-size: 0.9rem;
+  font-weight: 600;
+  padding: 7px 12px;
+  border-radius: 8px;
+  white-space: nowrap;
+}
+.nav-link:hover {
+  background: #f0f1f6;
+  color: var(--text);
+}
+.nav-link-active,
+.nav-link-active:hover {
+  background: #eef2ff;
+  color: var(--primary);
+}
+
+/* ---------- Workflows 頁 ---------- */
+.workflow-desc {
+  font-size: 0.92rem;
+  margin: -4px 0 14px;
+}
+.workflow-note {
+  margin: 12px 0 0;
+  font-size: 0.9rem;
+}
+.workflow-results {
+  margin-top: 18px;
+}
+.workflow-results .muted {
+  font-size: 0.9rem;
+  margin: 0 0 8px;
+}
+.workflow-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 8px;
+}
+.workflow-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #f8f9fc;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 9px 12px;
+  font-size: 0.92rem;
+}
+.flow-code {
+  font-family: ui-monospace, 'Cascadia Code', Consolas, monospace;
+  font-size: 0.78rem;
+  color: var(--muted);
+  flex-shrink: 0;
+}
+.flow-name {
+  color: #333a4a;
+  min-width: 0;
+}
+.flow-unit {
+  margin-left: auto;
+  font-size: 0.78rem;
+  color: var(--muted);
+  flex-shrink: 0;
+  text-align: right;
+}
+
+/* ---------- AI 計劃：揀 workflow ---------- */
+.workflow-item {
+  cursor: pointer;
+  user-select: none;
+  transition:
+    border-color 0.12s ease,
+    background 0.12s ease;
+}
+.workflow-item:hover {
+  border-color: #c7d2fe;
+}
+.workflow-item-selected,
+.workflow-item-selected:hover {
+  border-color: var(--primary);
+  background: #eef2ff;
+}
+.workflow-radio {
+  width: 18px;
+  flex-shrink: 0;
+  color: var(--primary);
+  font-size: 0.85rem;
+  text-align: center;
+}
+.flow-badge {
+  flex-shrink: 0;
+}
+/* 卡1 Work Flow Name 隔籬嘅「已交過」chip */
+.flow-readonly .flow-badge {
+  margin-left: 8px;
+  vertical-align: middle;
+}
+.workflow-next {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px dashed var(--border);
+}
+.workflow-next .muted {
+  margin: 0;
+  font-size: 0.9rem;
+}
+
+/* ---------- AI 計劃：填表 ---------- */
+.hint-text {
+  font-size: 0.85rem;
+  margin: 4px 0 12px;
+}
+.input-area {
+  min-height: 110px;
+  line-height: 1.5;
+}
+.ai-plan-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+/* ---------- Workflow 多選 / 逐條填表 wizard ---------- */
+.workflow-results-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+}
+.workflow-results-head .muted {
+  margin: 0;
+  font-size: 0.9rem;
+}
+.wizard-stepper {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 8px;
+  margin: 0 0 16px;
+}
+.wizard-chip {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 2px;
+  height: 100%;
+  min-height: 64px;
+  padding: 8px 12px;
+  font: inherit;
+  font-size: 0.82rem;
+  text-align: left;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--muted);
+  border-radius: 12px;
+  cursor: pointer;
+  transition:
+    border-color 0.12s ease,
+    background 0.12s ease,
+    color 0.12s ease;
+}
+.wizard-chip:hover {
+  border-color: #c7d2fe;
+  color: var(--text);
+}
+.wizard-chip-active,
+.wizard-chip-active:hover {
+  border-color: var(--primary);
+  background: var(--primary);
+  color: #fff;
+}
+.wizard-chip-done:not(.wizard-chip-active) {
+  color: #15803d;
+  background: #f0fdf4;
+  border-color: #bbf7d0;
+}
+.wizard-chip-line {
+  font-weight: 600;
+  white-space: nowrap;
+}
+.wizard-chip-name {
+  font-size: 0.74rem;
+  font-weight: 400;
+  opacity: 0.85;
+  overflow-wrap: anywhere;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.wizard-done .btn {
+  margin-top: 16px;
+}
+.wizard-done-list {
+  list-style: none;
+  margin: 10px 0 4px;
+  padding: 0;
+  display: grid;
+  gap: 8px;
+}
+.wizard-done-list li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #f8f9fc;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 9px 12px;
+  font-size: 0.92rem;
+}
+.wizard-done-list .chip {
+  flex-shrink: 0;
+}
+
+/* ---------- 「逐條填 AI 計劃」頁頭（部門 + 總負責人）---------- */
+.plan-lead-head {
+  margin-bottom: 14px;
+}
+.plan-lead-title {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+.plan-lead-label {
+  margin: 0 0 2px;
+  font-size: 0.78rem;
+  color: var(--muted);
+}
+.plan-lead-unit {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+}
+.plan-lead-unit .muted {
+  margin-left: 6px;
+  font-size: 0.76rem;
+  font-weight: 400;
+}
+.plan-lead-app {
+  margin: 0;
+  font-size: 1.05rem;
+  color: var(--primary);
+}
+.plan-lead-grid {
+  display: grid;
+  gap: 10px;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+}
+
+/* ---------- AI 計劃表單：兩欄排版 / 唯讀欄 / partition 卡 ---------- */
+.field-row {
+  display: grid;
+  gap: 10px;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+}
+/* 唯讀顯示（唔似輸入框 —— 顯示由 Firebase 帶入嘅資料） */
+.flow-readonly {
+  margin: 0;
+  padding: 9px 12px;
+  border-radius: 10px;
+  background: #f6f7fb;
+  color: #333a4a;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+.partition-card {
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 12px;
+  margin-bottom: 10px;
+  background: #fbfcfe;
+}
+.partition-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 10px;
+}
+.partition-head h3 {
+  margin: 0;
+  font-size: 0.96rem;
+}
+.partition-dates {
+  display: grid;
+  gap: 10px;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  margin-bottom: 10px;
+}
+/* Partition State chip —— Done / In progress 沿用上面 .state-*；
+   Planning / On Hold 係新加 */
+.state-planning {
+  background: #eef0f6;
+  color: #4b5563;
+}
+.state-on_hold {
+  background: #fef3c7;
+  color: #b45309;
+}
+
+@media (max-width: 640px) {
+  .partition-dates,
+  .plan-lead-grid {
+    grid-template-columns: 1fr;
   }
-  .task-item {
-    flex-direction: column;
-  }
+}
+
+/* ---------- Modal（重設單位確認用）---------- */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: rgba(16, 24, 40, 0.55);
+}
+.modal-card {
+  width: 100%;
+  max-width: 480px;
+  max-height: 90vh;
+  overflow-y: auto;
+  padding: 22px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: 0 20px 50px rgba(16, 24, 40, 0.28);
+}
+.modal-title {
+  margin: 0 0 12px;
+  font-size: 1.1rem;
+}
+.modal-hint {
+  margin: 14px 0;
+  font-size: 0.85rem;
+  line-height: 1.5;
+  color: var(--muted);
+}
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 18px;
+}
+
+/* 危險操作警告框（重設確認） */
+.danger-box {
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 10px;
+  padding: 12px 14px;
+  font-size: 0.88rem;
+  color: #7f1d1d;
+}
+.danger-list {
+  margin: 6px 0 0;
+  padding-left: 20px;
+}
+
+/* 「會保留」提示（綠色 —— 對比上面紅色警告框） */
+.keep-note {
+  margin: 10px 0 0;
+  padding: 10px 14px;
+  border-radius: 10px;
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  color: #15803d;
+  font-size: 0.85rem;
+  line-height: 1.5;
+}
+
+/* 「會先自動備份」提示（藍色 —— 安全網） */
+.backup-note {
+  margin: 10px 0 0;
+  padding: 10px 14px;
+  border-radius: 10px;
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+  color: #1d4ed8;
+  font-size: 0.85rem;
+  line-height: 1.5;
+}
+
+/* 觀察模式：清單唔可以點 → 唔好顯示手型光標 */
+.workflow-list-readonly .workflow-item {
+  cursor: default;
 }
 

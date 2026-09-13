@@ -32,3 +32,10 @@ dist-ssr
 npm-install.log
 .npm-install.pid
 
+# 獨立 git repo（約 780MB）—— 唔加入呢個 repo
+ai-homework-follow-up/
+
+# Firestore 保安規則：唔 commit（公開 repo 唔想暴露「邊啲 collection 開放」）
+# 本機檔案照樣保留，部署時手動貼上 Firebase Console 即可。
+firestore.rules
+

@@ -32,8 +32,52 @@ const config: FirebaseConfigValues = {
 
 const REQUIRED_FIELDS = ['apiKey', 'authDomain', 'projectId', 'appId'] as const
 
+/**
+ * `.env.example` 嘅佔位值當作「未設定」。
+ * 如果唔過濾，直接複製 .env.example 做 .env 就會被當成「已設定」，
+ * 然後 initializeApp 會爆啲好難明嘅 Firebase 錯誤（例如 API key 無效）。
+ */
+const PLACEHOLDER_PATTERN = /^(your-|xxx|placeholder|change-me|<)/i
+
+function hasRealValue(field: keyof FirebaseConfigValues): boolean {
+  const value = config[field]?.trim() ?? ''
+  return value !== '' && !PLACEHOLDER_PATTERN.test(value)
+}
+
 export function isFirebaseConfigured(): boolean {
-  return REQUIRED_FIELDS.every((field) => Boolean(config[field]))
+  return REQUIRED_FIELDS.every((field) => hasRealValue(field))
+}
+
+/** 4 個必需值對應嘅 .env 變數名。 */
+const REQUIRED_ENV_NAMES: Record<(typeof REQUIRED_FIELDS)[number], string> = {
+  apiKey: 'VITE_FIREBASE_API_KEY',
+  authDomain: 'VITE_FIREBASE_AUTH_DOMAIN',
+  projectId: 'VITE_FIREBASE_PROJECT_ID',
+  appId: 'VITE_FIREBASE_APP_ID',
+}
+
+export type FirebaseConfigFieldState = 'ok' | 'empty' | 'placeholder'
+
+export interface FirebaseConfigFieldStatus {
+  envName: string
+  state: FirebaseConfigFieldState
+}
+
+/**
+ * 診斷用：列出 4 個必需值而家嘅狀態（**唔會露出真值**）。
+ * 登入頁「Firebase 登入未設定」嘅指引會用佢話你知仍然爭邊個。
+ */
+export function firebaseConfigStatus(): FirebaseConfigFieldStatus[] {
+  return REQUIRED_FIELDS.map((field) => {
+    const value = config[field]?.trim() ?? ''
+    let state: FirebaseConfigFieldState = 'ok'
+    if (value === '') {
+      state = 'empty'
+    } else if (PLACEHOLDER_PATTERN.test(value)) {
+      state = 'placeholder'
+    }
+    return { envName: REQUIRED_ENV_NAMES[field], state }
+  })
 }
 
 let firebaseApp: FirebaseApp | null = null

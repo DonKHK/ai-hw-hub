@@ -5,7 +5,7 @@ import type { AuthContextValue } from './authContext'
 export function useAuth(): AuthContextValue {
   const context = useContext(AuthContext)
   if (context === null) {
-    throw new Error('useAuth 必須喺 <AuthProvider> 內使用。')
+    throw new Error('useAuth must be used inside <AuthProvider>.')
   }
   return context
 }

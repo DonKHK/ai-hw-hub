@@ -1019,6 +1019,38 @@ textarea.input {
   color: #b45309;
 }
 
+/* ---------- 表單狀態提示（V1 日期問題／V2 未儲存、儲存結果）---------- */
+.form-status {
+  margin: 12px 0 0;
+  padding: 10px 12px;
+  border-radius: 10px;
+  font-size: 0.88rem;
+  font-weight: 600;
+  line-height: 1.45;
+}
+.form-status-ok {
+  background: #dcfce7;
+  border: 1px solid #bbf7d0;
+  color: #15803d;
+}
+.form-status-warn {
+  background: #fef3c7;
+  border: 1px solid #fde68a;
+  color: #b45309;
+}
+.form-status-danger {
+  background: #fee2e2;
+  border: 1px solid #fecaca;
+  color: #b91c1c;
+}
+/* Partition 卡片入面嘅日期問題提示 */
+.field-warning {
+  margin: 8px 0 0;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #b45309;
+}
+
 @media (max-width: 640px) {
   .partition-dates,
   .plan-lead-grid {

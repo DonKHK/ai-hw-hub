@@ -1,5 +1,6 @@
-import { useEffect, useState } from 'react'
-import { Link, useNavigate, useParams } from 'react-router-dom'
+import { useCallback, useEffect, useRef, useState } from 'react'
+import type { MouseEvent as ReactMouseEvent } from 'react'
+import { Link, useParams } from 'react-router-dom'
 import AppHeader from '../components/AppHeader'
 import AiPlanForm from '../components/AiPlanForm'
 import PlanLeadHeader from '../components/PlanLeadHeader'
@@ -15,12 +16,26 @@ import type { AiPlanLead, AiPlanLog } from '../types'
 /** 單條 workflow 嘅 AI 計劃頁（deep-link／直接編輯用）。 */
 export default function AiPlanPage() {
   const { workflowCode = '' } = useParams()
-  const navigate = useNavigate()
   const { user } = useAuth()
   const access = user === null ? undefined : accessForUser(user)
   const uid = user?.uid
   // Portal 用身份顯示名、Firebase 用 displayName／email（統一由 access 攞）
   const ownerName = access?.displayName ?? '—'
+
+  // 🆕 V2：未儲存改動 → Back／Cancel 之前確認（唔會靜靜咁丟失編輯）
+  //    用 ref 而唔用 state：唔會引起 re-render（表單每次變更都通知）
+  const dirtyRef = useRef(false)
+  const handleDirtyChange = useCallback((dirty: boolean) => {
+    dirtyRef.current = dirty
+  }, [])
+  const confirmLeave = (event: ReactMouseEvent<HTMLAnchorElement>) => {
+    if (
+      dirtyRef.current &&
+      !window.confirm('You have unsaved changes. Leave this page and lose them?')
+    ) {
+      event.preventDefault()
+    }
+  }
 
   // ⚠️ 一定要經 resolveWorkflowsByCodes（先 Firestore 快照、再本機 inventory）：
   //    Portal 嘅 code 係 UUID，LOCAL_INVENTORY 查唔到 → 會誤報「搵唔到呢條 workflow」。
@@ -63,6 +78,8 @@ export default function AiPlanPage() {
   const [logs, setLogs] = useState<AiPlanLog[]>([])
   const [logsLoading, setLogsLoading] = useState(true)
   const [logsError, setLogsError] = useState<string | null>(null)
+  // 🆕 儲存成功後重新載入活動紀錄（令用戶即刻見到「呢次改動有入到」）
+  const [logsReloadToken, setLogsReloadToken] = useState(0)
 
   useEffect(() => {
     let cancelled = false
@@ -90,7 +107,7 @@ export default function AiPlanPage() {
     return () => {
       cancelled = true
     }
-  }, [uid, workflowCode])
+  }, [uid, workflowCode, logsReloadToken])
 
   async function handleDeleteLog(logId: string) {
     if (!window.confirm('Delete this activity log entry? This cannot be undone.')) {
@@ -111,6 +128,7 @@ export default function AiPlanPage() {
         <Link
           to={access?.workflowScope === 'none' ? '/' : '/workflows'}
           className="back-link"
+          onClick={confirmLeave}
         >
           ← Back
         </Link>
@@ -161,17 +179,24 @@ export default function AiPlanPage() {
               <div>
                 <h1 title={workflow.code}>AI plan — {workflow.name}</h1>
               </div>
-              <Link to="/workflows" className="btn btn-ghost">
-                Cancel
+              <Link to="/workflows" className="btn btn-ghost" onClick={confirmLeave}>
+                Back to workflows
               </Link>
             </div>
 
+            {/* 儲存後**唔自動跳走**：表單會顯示儲存結果（已記錄 N 項變更／
+                ⚠️ 冇任何變更），用戶即刻知改動有冇入到 Firestore；
+                同時重新載入下面嘅活動紀錄，方便對照。 */}
             <AiPlanForm
               workflow={workflow}
               ownerId={uid}
               ownerName={ownerName}
               lead={lead}
-              onSaved={() => navigate('/workflows')}
+              onDirtyChange={handleDirtyChange}
+              onSaved={() => {
+                setLogsLoading(true)
+                setLogsReloadToken((token) => token + 1)
+              }}
             />
           </>
         )}

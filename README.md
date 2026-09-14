@@ -126,8 +126,17 @@ interface AiPlan {
   plan: string               // AI 打算點做（PLAN）
   inputData: string
   outputData: string
-  steps: Array<{ name: string; due: string; dueDate?: string | null }>
+  steps: Array<{
+    name: string
+    due: string                      // 向後兼容（新資料 = dueDate 嘅鏡像）
+    dueDate?: string | null
+    startDate?: string | null
+    state?: 'planning' | 'in_progress' | 'done' | 'on_hold'
+    detail?: string
+  }>
   status?: 'selected' | 'in_progress' | 'done'
+  startDate?: string | null
+  endDate?: string | null
   painPoints: string[]
   supports: string[]
   createdAt: number           // Unix 毫秒
@@ -191,7 +200,7 @@ src/
 
 - **KPI 卡**：單位總數 / 已揀 Flow 嘅單位 / 已入 AI 方法 / 就到期 / 已到期
 - **單位監控表**：每個 BU/DEPT 一行 —— workflow 數、已揀 Flow、已入 AI 方法、最近到期、狀態
-- **展開明細**：撳單位嗰行 → 每條 workflow 嘅狀態、填報人、Plan 嘅開始／完成日期、每個 step 嘅 timeline（如期／就到期／已到期）
+- **展開明細**：撳單位嗰行 → 每條 workflow 嘅狀態、填報人、Plan 嘅開始／完成日期、每個 step 嘅 timeline（**Completed**／如期／就到期／已到期）
 - **篩選**：全部 / 需要跟進 / 已到期 / 就到期 / 已揀未填 / 未開始 / 進行中 / 已完成
 
 > **「到期點」有兩層**，兩者一齊計（見 `src/lib/planStatus.ts`）：
@@ -201,16 +210,28 @@ src/
 > 所以 KPI 嘅「就到期／已到期」、單位狀態、篩選數字、「最近到期」欄，
 > 都會包含過咗 plan end date 嘅計劃（唔再只係睇 step）。
 
+> ⚠️ **Step State = Done 嘅 partition 唔計到期**：`overdue` 係「未完成 + 過期」
+> 嘅**跟進訊號**，做完就冇嘢要跟。所以 Done 嘅 partition 只會顯示綠色
+> **Completed**，就算佢個 end date 過咗都唔會變紅 —— 過期只會喺日期後面用
+> 灰色細字記低「**(N days late)**」（遲交紀錄）。計劃層、單位狀態、
+> 「已到期／就到期」KPI、篩選數字、「最近到期」欄一律跟同一規則
+> （見 `stepTimelineState()`：先睇 State，Done 直接回 `done`）。
+> 只有**未完成**嘅 partition（`Planning` / `In progress` / `On Hold`）
+> 同 plan end date 會令計劃變 Overdue／Due soon。
+
 ### 狀態定義
 
 | 狀態 | 條件 |
 |---|---|
 | 未開始 | 完全冇計劃記錄 |
 | 已揀 Flow（未填） | 有記錄但 `plan` 空白 |
-| 進行中 | 已填，所有到期點（step due ＋ Plan end date）都 > 14 日 |
-| 就到期 | 有 step **或 Plan details end date** 喺 **14 日內**到期（改 `DUE_SOON_DAYS` 可調） |
-| 已到期 | 有 step **或 Plan details end date** 已經過期 |
+| 進行中 | 已填，所有**未完成**到期點（step due ＋ Plan end date）都 > 14 日 |
+| 就到期 | 有**未完成** step **或 Plan details end date** 喺 **14 日內**到期（改 `DUE_SOON_DAYS` 可調） |
+| 已到期 | 有**未完成** step **或 Plan details end date** 已經過期（State = Done 嘅 partition 唔計） |
 | 已完成 | AI 計劃表單揀咗「已完成」，或者全部 step 都 Done（完成後唔會再因為過期而變「已到期」） |
+
+> **Partition（step）層面嘅 chip**：`Completed`（State = Done，唔理日期）／
+> `Overdue`／`Due soon`／`On track`／`No date`（冇 due date）。
 
 ### 權限視圖（兩種登入方法係**唔同工種**）
 

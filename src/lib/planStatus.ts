@@ -62,7 +62,16 @@ export function planEndDate(plan: AiPlan): string | null {
   return null
 }
 
-export type TimelineState = 'overdue' | 'dueSoon' | 'onTrack' | 'noDate'
+/**
+ * 一個到期點（step 或 plan end date）嘅狀態。
+ * 🆕 `done` = 呢個 partition 已做完 —— 做完就冇嘢要跟，唔會再算 Overdue。
+ */
+export type TimelineState =
+  | 'done'
+  | 'overdue'
+  | 'dueSoon'
+  | 'onTrack'
+  | 'noDate'
 
 export interface StepTimeline {
   index: number
@@ -85,6 +94,29 @@ export function stateForDue(
     return 'overdue'
   }
   return daysLeft <= DUE_SOON_DAYS ? 'dueSoon' : 'onTrack'
+}
+
+/** 呢個 partition 係唔係已經做完？（Done 就冇嘢要跟） */
+export function isDoneStep(step: AiPlanStep): boolean {
+  return step.state === 'done'
+}
+
+/**
+ * 一個 step 嘅 timeline 狀態。
+ *
+ * ⚠️ 一定要**先**睇 `step.state`：overdue 係「未完成 + 過咗期」嘅跟進訊號，
+ * 做完嘅 partition 唔應該再出 Overdue（否則一個已交嘅 partition 會
+ * 一路拖住整條計劃同單位變紅）。遲交嘅資訊由 UI 用 `daysLeft < 0`
+ * 自己顯示灰色「(N days late)」，唔會當成 Overdue。
+ */
+export function stepTimelineState(
+  step: AiPlanStep,
+  today: string,
+): TimelineState {
+  if (isDoneStep(step)) {
+    return 'done'
+  }
+  return stateForDue(stepDueDate(step), today)
 }
 
 /**
@@ -110,7 +142,7 @@ export function planTimeline(
       name: step.name,
       due,
       daysLeft: due === null ? null : daysBetween(today, due),
-      state: stateForDue(due, today),
+      state: stepTimelineState(step, today),
     }
   })
 }
@@ -137,7 +169,7 @@ export function planState(
   }
   // 新表單冇「計劃狀態」欄位 —— 所有 partition 都 Done 就當計劃完成。
   const steps = plan.steps ?? []
-  if (steps.length > 0 && steps.every((step) => step.state === 'done')) {
+  if (steps.length > 0 && steps.every(isDoneStep)) {
     return 'done'
   }
   // plan 空白 = 只係揀咗 flow 未填（stub 或者未交）；
@@ -145,7 +177,11 @@ export function planState(
   if (plan.plan.trim() === '') {
     return 'selected'
   }
-  const timeline = planTimeline(plan, today)
+  // 🆕 做完嘅 partition 唔再計：一個已交嘅 partition 唔應該拖累整條計劃變
+  //    Overdue（遲交只用 UI 灰色「(N days late)」記低）。
+  const timeline = planTimeline(plan, today).filter(
+    (item) => item.state !== 'done',
+  )
   // 🆕 Plan details 嘅 end date 都係一個「到期點」——
   //    同 step due date 一齊判斷：過咗 = Overdue，14 日內 = Due soon。
   const endState = planEndState(plan, today)
@@ -195,7 +231,15 @@ export function unitState(
   )
 }
 
-/** 一個單位入面最近（最早就到期／已經過期）嘅日期。 */
+/**
+ * 一個單位入面最近（最早就到期／已經過期）嘅日期。
+ *
+ * ⚠️ 只計**未完成**嘅到期點：
+ * - 已完成嘅計劃（表單揀咗 Completed，或者全部 partition 都 Done）成條唔報；
+ * - 做完嘅 partition（State = Done）唔報 —— 否則完成咗嘅舊日期會一直
+ *   顯示成「N days overdue」。
+ * 同 `planState` 用同一套規則。
+ */
 export function earliestDue(
   plans: AiPlan[],
   today: string = todayIso(),
@@ -203,8 +247,17 @@ export function earliestDue(
   let best: { due: string; daysLeft: number; state: TimelineState } | null =
     null
   for (const plan of plans) {
+    // 🆕 計劃已完成 → 冇嘢要跟，成條計劃（連 plan end date）都唔報。
+    if (planState(plan, today) === 'done') {
+      continue
+    }
     for (const item of planTimeline(plan, today)) {
-      if (item.due === null || item.daysLeft === null) {
+      if (
+        item.due === null ||
+        item.daysLeft === null ||
+        // 🆕 做完嘅 partition 唔再係「最近到期」
+        item.state === 'done'
+      ) {
         continue
       }
       if (best === null || item.daysLeft < best.daysLeft) {
@@ -225,6 +278,7 @@ export function earliestDue(
 }
 
 export const TIMELINE_STATE_LABELS: Record<TimelineState, string> = {
+  done: 'Completed',
   overdue: 'Overdue',
   dueSoon: 'Due soon',
   onTrack: 'On track',

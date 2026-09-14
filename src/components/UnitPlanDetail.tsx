@@ -6,12 +6,34 @@ import {
   planState,
   planTimeline,
 } from '../lib/planStatus'
+import type { StepTimeline, TimelineState } from '../lib/planStatus'
 import { isLongWorkflowCode } from '../lib/workflowCode'
 import type { AiPlan } from '../types'
 
 interface UnitPlanDetailProps {
   plans: AiPlan[]
   today: string
+}
+
+/**
+ * 日期後面嘅灰色括號說明。
+ *
+ * - **Done**（做完）：過期只係「遲交」紀錄 → 「(N days late)」，未過期就唔加字
+ * - 未做完：過期 = 「(N days overdue)」，未過期 = 「(N days left)」
+ *
+ * ⚠️ Done 嘅 partition 唔會出 Overdue —— overdue 係「未完成 + 過期」嘅
+ * 跟進訊號，做完就冇嘢要跟（狀態 chip 由 `planTimeline` 計，見 planStatus.ts）。
+ */
+function dueSuffix(item: StepTimeline): string {
+  if (item.daysLeft === null) {
+    return ''
+  }
+  if (item.state === 'done') {
+    return item.daysLeft < 0 ? `(${Math.abs(item.daysLeft)} days late)` : ''
+  }
+  return item.daysLeft < 0
+    ? `(${Math.abs(item.daysLeft)} days overdue)`
+    : `(${item.daysLeft} days left)`
 }
 
 /**
@@ -39,7 +61,11 @@ export default function UnitPlanDetail({
             ? plan.startDate
             : null
         const endDate = planEndDate(plan)
-        const endState = planEndState(plan, today)
+        // 🆕 計劃已完成（全部 step Done／表單揀咗 Completed）→ end date 唔應該
+        //    再出紅色 Overdue／黃色 Due soon（同 planState 一致）。
+        const endChipState: TimelineState =
+          state === 'done' ? 'done' : planEndState(plan, today)
+
         return (
           <li key={plan.id} className="plan-detail">
             <div className="plan-detail-head">
@@ -58,8 +84,8 @@ export default function UnitPlanDetail({
             {(startDate !== null || endDate !== null) && (
               <p className="muted hint-text">
                 Plan: {startDate ?? '—'} → {endDate ?? '—'}{' '}
-                <span className={`state-chip state-${endState}`}>
-                  {TIMELINE_STATE_LABELS[endState]}
+                <span className={`state-chip state-${endChipState}`}>
+                  {TIMELINE_STATE_LABELS[endChipState]}
                 </span>
               </p>
             )}
@@ -76,11 +102,7 @@ export default function UnitPlanDetail({
                     <span className="timeline-name">{item.name}</span>
                     <span className="muted">
                       {item.due ?? '—'}
-                      {item.daysLeft === null
-                        ? ''
-                        : item.daysLeft < 0
-                          ? `(${Math.abs(item.daysLeft)} days overdue)`
-                          : `(${item.daysLeft} days left)`}
+                      {dueSuffix(item)}
                     </span>
                   </li>
                 ))}
